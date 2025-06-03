@@ -16,20 +16,11 @@ class DecoyGenerator:
             log.info("Loading GPT-2 text-generation pipeline…")
             DecoyGenerator._pipe = pipeline("text-generation",
                                             model="gpt2",
-                                            device_map="auto")
-            set_seed(42)                        # repeatable demos
+                                            device=-1)  # CPU-safe
+            set_seed(42)  # repeatable demos
 
     def generate_fake_data(self, prompt="User data:", length=50) -> str:
         out = self._pipe(prompt,
                          max_length=length,
                          num_return_sequences=1)[0]["generated_text"]
         return out.replace("\n", " ")
-from transformers import pipeline
-
-class DecoyDataGenerator:
-    def __init__(self):
-        self.generator = pipeline("text-generation", model="gpt2", device=-1)  # CPU
-
-    def generate(self, prompt):
-        result = self.generator(prompt, max_length=50, num_return_sequences=1)
-        return result[0]["generated_text"]
