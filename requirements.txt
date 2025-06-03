@@ -5,3 +5,4 @@ torch
 stable-baselines3
 gym
 faker
+gunicorn
