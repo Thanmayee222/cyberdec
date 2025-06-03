@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Intelligent Cyber Deception – Dashboard</title>
+
+<style>
+    :root {
+        --primary: #00ffe1;
+        --bg-main: #0e1117;
+        --bg-card: rgba(255,255,255,0.06);
+        --text-main: #e6e6e6;
+        --text-heading: var(--primary);
+        --shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{
+        font-family:'Poppins',sans-serif;
+        background: linear-gradient(135deg,#0e1117 0%,#06121a 40%,#031e25 100%);
+        color:var(--text-main);
+        min-height:100vh;
+        overflow-x:hidden;
+    }
+
+    header{
+        text-align:center;
+        padding:1.2rem 1rem;
+        font-size:2rem;
+        font-weight:600;
+        color:var(--text-heading);
+        position:sticky;
+        top:0;
+        backdrop-filter:blur(10px);
+        background:rgba(14,17,23,0.75);
+        border-bottom:1px solid #1f2937;
+        z-index:99;
+    }
+
+    nav{
+        display:flex;
+        justify-content:center;
+        gap:2.5rem;
+        padding:0.9rem 0;
+        background:rgba(17,24,39,0.8);
+        backdrop-filter:blur(10px);
+        box-shadow:0 2px 6px rgba(0,0,0,0.35);
+        position:sticky;
+        top:70px;
+        z-index:90;
+    }
+    nav a{
+        color:#fff;
+        text-decoration:none;
+        font-weight:600;
+        transition:color .25s;
+    }
+    nav a:hover{color:var(--primary);}
+
+    .container{
+        display:flex;
+        flex-wrap:wrap;
+        justify-content:center;
+        gap:2rem;
+        padding:3rem 1.5rem;
+    }
+
+    .card{
+        background:var(--bg-card);
+        border:1px solid rgba(255,255,255,0.12);
+        border-radius:18px;
+        padding:2rem;
+        width:clamp(280px, 42%, 500px);
+        box-shadow:var(--shadow);
+        backdrop-filter:blur(12px);
+        animation:pop 0.8s cubic-bezier(.19,1,.22,1);
+    }
+    @keyframes pop{
+        0%{opacity:0;transform:translateY(30px) scale(.95);}
+        100%{opacity:1;transform:translateY(0) scale(1);}
+    }
+
+    .card h2{color:var(--text-heading);margin-bottom:1rem;}
+
+    label{display:block;margin-top:1rem;font-size:.9rem;}
+    input{
+        width:100%;padding:.6rem .8rem;margin-top:.35rem;
+        border:none;border-radius:8px;background:#1f2937;color:#fff;
+    }
+    button{
+        margin-top:1.3rem;width:100%;padding:.75rem 1rem;
+        border:none;border-radius:8px;
+        background:var(--primary);color:#000;font-weight:700;cursor:pointer;
+        box-shadow:0 4px 14px rgba(0 255 225 / 0.3);
+        transition:transform .25s, box-shadow .25s;
+    }
+    button:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 6px 20px rgba(0 255 225 / 0.45);}
+
+    pre{
+        background:#111827;padding:1rem;margin-top:1rem;
+        border-radius:10px;max-height:260px;overflow:auto;
+        font-size:.85rem;
+    }
+
+    .team{
+        display:flex;flex-wrap:wrap;gap:1.5rem;justify-content:center;
+        margin-top:1.5rem;
+    }
+
+    .profile-card{
+        background:var(--bg-card);
+        border:1px solid rgba(255,255,255,0.12);
+        border-radius:15px;
+        padding:1.5rem 1rem;
+        width:160px;text-align:center;
+        box-shadow:0 4px 14px rgba(0,0,0,.25);
+        transition:transform .3s ease;
+    }
+    .profile-card:hover{transform:translateY(-8px);}
+    .profile-card div{
+        font-weight:600;
+        margin-bottom:0.6rem;
+        font-size:1.1rem;
+        color:#fff;
+    }
+
+    .linkedin-btn{
+        display:inline-block;padding:.35rem .8rem;border-radius:6px;
+        background:var(--primary);color:#000;font-weight:600;text-decoration:none;
+        transition:transform .25s, box-shadow .25s;
+    }
+    .linkedin-btn:hover{
+        transform:scale(1.08);
+        box-shadow:0 4px 14px rgba(0 255 225 / 0.45);
+    }
+
+    iframe{border:none;border-radius:10px;background:#f4f0f0;}
+
+    @media(max-width:700px){
+        .card{width:100%;}
+        nav{flex-wrap:wrap;gap:1rem;}
+    }
+</style>
+</head>
+
+<body>
+
+<header>Intelligent Cyber Deception System</header>
+
+<nav>
+    <a href="#form">Send Data</a>
+    <a href="#logs">Logs</a>
+    <a href="#team">Team</a>
+</nav>
+
+<div class="container">
+    <div class="card" id="form">
+        <h2>Send Intrusion Data</h2>
+        <form id="honeypotForm">
+            <label>Source IP:</label>
+            <input name="source_ip" value="192.168.1.100" />
+            <label>Payload:</label>
+            <input name="payload" value="fake login attempt" />
+            <button type="submit">Send</button>
+        </form>
+
+        <h3 style="margin-top:2rem;color:var(--text-heading)">Response:</h3>
+        <pre id="responseOutput">Waiting for response...</pre>
+    </div>
+
+    <div class="card" id="logs">
+        <h2>Live Logs</h2>
+        <iframe src="http://127.0.0.1:5000/dashboard" width="100%" height="300"></iframe>
+    </div>
+</div>
+
+<div class="container" id="team">
+    <div class="card" style="width:100%;max-width:900px">
+        <h2>Our Team</h2>
+        <div class="team">
+            <div class="profile-card">
+                <div>Thanmayee</div>
+                <a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/in/thanmayee222/">LinkedIn</a>
+            </div>
+            <div class="profile-card">
+                <div>Shruthi</div>
+                <a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/in/shruthi">LinkedIn</a>
+            </div>
+            <div class="profile-card">
+                <div>Sathwika</div>
+                <a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/in/sathwika-pala-925390284">LinkedIn</a>
+            </div>
+            <div class="profile-card">
+                <div>Vinay</div>
+                <a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/in/vinaycharan/">LinkedIn</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById("honeypotForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = {
+        source_ip: e.target.source_ip.value.trim(),
+        payload:   e.target.payload.value.trim()
+    };
+    const out = document.getElementById("responseOutput");
+    out.textContent = "⏳ Sending...";
+
+    try{
+        const res = await fetch("http://127.0.0.1:5000/honeypot",{
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body:JSON.stringify(data)
+        });
+        const json = await res.json();
+        out.textContent = JSON.stringify(json,null,2);
+    }catch(err){
+        out.textContent = "❌ Error: " + err.message;
+    }
+});
+</script>
+
+</body>
+</html>

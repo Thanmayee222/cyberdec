@@ -1,0 +1,7 @@
+flask
+scikit-learn
+transformers
+torch
+stable-baselines3
+gym
+faker
