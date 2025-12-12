@@ -39,3 +39,37 @@ def evaluate_threat(session_info):
         threat_score += 0.4
     
     return min(1.0, threat_score)  # Cap at 1.0
+def evaluate_threat(session_record):
+    activities = session_record.get("activities", [])
+
+    failed_logins = sum(
+        1 for a in activities
+        if a["type"] == "form_submission"
+        and a["data"].get("form") == "login"
+    )
+
+    admin_violations = sum(
+        1 for a in activities
+        if a["type"] == "unauthorized_admin_access"
+    )
+
+    canary_hits = sum(
+        1 for a in activities
+        if a["type"] == "canary_access"
+    )
+
+    page_visits = sum(
+        1 for a in activities
+        if a["type"] == "page_visit"
+    )
+
+    # heuristic scoring
+    score = 0.0
+    score += 0.15 * failed_logins       # 4 bad logins -> 0.6
+    score += 0.4  * admin_violations    # 1 unauthorized /admin -> +0.4
+    score += 0.8  * canary_hits         # 1 canary hit -> 0.8 (immediate deception)
+
+    if page_visits > 30:
+        score += 0.2                    # very noisy scanner
+
+    return min(1.0, score)

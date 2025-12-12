@@ -7,6 +7,8 @@ from utils.threat_detection import evaluate_threat
 from utils.deception import generate_fake_content
 import threading
 import os
+from flask import make_response
+
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -207,6 +209,35 @@ def admin_monitor():
         'banned_ips': list(banned_ips)
     })
 
+@app.route('/.well-known/internal-backup')
+def canary():
+    """
+    Canary endpoint: normal users should never hit this.
+    Any request here is treated as highly suspicious.
+    """
+    initialize_session_if_needed()
+    log_activity('canary_access', {'path': request.path})
+
+    sess_id = session['session_id']
+    # Spike threat score for this session
+    current = session_data[sess_id].get('threat_score', 0.0)
+    session_data[sess_id]['threat_score'] = max(current, 0.9)
+
+    return "Not found", 404
+@app.route('/mark_suspicious')
+def mark_suspicious():
+    """
+    Mark current session as suspicious and set a cookie which a
+    reverse proxy can use to route this user to the deception app.
+    """
+    initialize_session_if_needed()
+    sess_id = session['session_id']
+    session_data[sess_id]['threat_score'] = 1.0
+    log_activity('mark_suspicious', {})
+
+    resp = make_response("Session marked as suspicious")
+    resp.set_cookie('deception_route', '1', httponly=True)
+    return resp
 
 # -----------------------------------------------------------------------------
 # Main
