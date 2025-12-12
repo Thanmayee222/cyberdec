@@ -1,0 +1,13 @@
+venv/ 
+venv/
+env/
+__pycache__/
+*.pyc
+dist/
+build/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Pipfile.lock
+poetry.lock

@@ -1,0 +1,202 @@
+import dotenv from 'dotenv';
+import express from 'express';
+import cors from 'cors';
+import { Pinecone } from '@pinecone-database/pinecone';
+import axios from 'axios';
+
+dotenv.config();
+
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+// 🌍 Environment Variables
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const PINECONE_API_KEY = process.env.PINECONE_API_KEY;
+const SERPER_API_KEY = process.env.SERPER_API_KEY;
+const JINA_READER_API_KEY = process.env.JINA_READER_API_KEY;
+
+const indexName = 'genai';
+const dimension = 768;
+
+let pineconeClient;
+let pineconeIndex;
+
+// 🧠 Initialize Pinecone
+(async () => {
+  try {
+    pineconeClient = new Pinecone({ apiKey: PINECONE_API_KEY });
+    const list = await pineconeClient.listIndexes();
+    const existingIndexes = list.indexes.map((index) => index.name);
+
+    if (!existingIndexes.includes(indexName)) {
+      console.log(`📦 Creating Pinecone index: ${indexName}`);
+      await pineconeClient.createIndex({
+        name: indexName,
+        dimension,
+        metric: 'cosine',
+        spec: {
+          serverless: {
+            cloud: 'aws',
+            region: 'us-east-1',
+          },
+        },
+      });
+      console.log(`✅ Index '${indexName}' created`);
+    } else {
+      console.log(`ℹ️ Index '${indexName}' already exists`);
+    }
+
+    pineconeIndex = pineconeClient.index(indexName);
+    console.log('✅ Pinecone client initialized');
+  } catch (error) {
+    console.error('❌ Pinecone initialization failed:', error.message);
+    process.exit(1);
+  }
+})();
+
+/**
+ * ✅ Get embedding from Gemini using embedding-001 (Google AI Studio) - Revised
+ */
+async function getGeminiEmbedding(text) {
+  const embeddingModel = 'embedding-001'; // Google AI Studio model
+  try {
+    console.log(`Attempting to get embedding using model: ${embeddingModel}`);
+    const response = await axios({
+      method: 'post',
+      url: `https://generativelanguage.googleapis.com/v1beta2/models/${embeddingModel}:embedText?key=${GEMINI_API_KEY}`,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: { text },
+    });
+
+    if (response.status !== 200) {
+      console.error('❌ Gemini API returned an error status:', response.status, response.statusText);
+      throw new Error(`Gemini API error: ${response.status} ${response.statusText}`);
+    }
+
+    if (!response.data || !response.data.embedding || !response.data.embedding.values) {
+      console.error('❌ Invalid embedding format received from Gemini:', response.data);
+      throw new Error('Invalid embedding format received from Gemini');
+    }
+
+    const vector = response.data.embedding.values;
+    if (!Array.isArray(vector)) {
+      console.error('❌ Embedding values are not an array:', vector);
+      throw new Error('Embedding values are not an array');
+    }
+    return vector;
+  } catch (err) {
+    console.error('❌ Error fetching embedding:', err.response ? err.response.data : err.message);
+    throw new Error('Embedding failed');
+  }
+}
+
+/**
+ * Generate a response using Gemini 1.5 Flash
+ */
+async function generateGeminiResponse(prompt) {
+  try {
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta2/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      },
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+    return response.data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
+  } catch (err) {
+    console.error('❌ Error generating Gemini response:', err.response?.data || err.message);
+    throw new Error('Response generation failed');
+  }
+}
+
+// 🚀 Chatbot Endpoint
+app.post('/api/chatbot', async (req, res) => {
+  try {
+    const { query, userId, documentUrl, address } = req.body;
+
+    if (!query || !userId) {
+      return res.status(400).json({ error: 'Missing required fields: query or userId' });
+    }
+
+    // 1. Get Gemini Embedding
+    const embedding = await getGeminiEmbedding(query);
+
+    // 2. Store in Pinecone
+    await pineconeIndex.upsert([
+      {
+        id: `${userId}-${Date.now()}`,
+        values: embedding,
+        metadata: { text: query },
+      },
+    ]);
+
+    // 3. Retrieve relevant history
+    const contextMatches = await pineconeIndex.query({
+      topK: 5,
+      vector: embedding,
+      includeMetadata: true,
+    });
+
+    const pastInteractions = contextMatches.matches
+      ? contextMatches.matches.map((m) => m.metadata?.text).filter(Boolean)
+      : [];
+    const prompt = `User: ${query}\nRelevant Past:\n${pastInteractions.join('\n')}`;
+
+    // 4. Generate response
+    const chatbotResponse = await generateGeminiResponse(prompt);
+
+    // 5. Document extraction (optional)
+    let documentResult = null;
+    if (documentUrl) {
+      const jinaRes = await axios.post(
+        'https://api.jina.ai/reader',
+        { url: documentUrl },
+        { headers: { Authorization: `Bearer ${JINA_READER_API_KEY}` } }
+      );
+      documentResult = jinaRes.data;
+    }
+
+    // 6. Geolocation (optional)
+    let geocodeResult = null;
+    if (address) {
+      const osmRes = await axios.get('https://nominatim.openstreetmap.org/search', {
+        params: { q: address, format: 'json' },
+        headers: { 'User-Agent': 'MyApp/1.0' },
+      });
+      geocodeResult = osmRes.data;
+    }
+
+    // 7. Web search (optional)
+    let searchResults = null;
+    const serperRes = await axios.post(
+      'https://google.serper.dev/search',
+      { q: query },
+      { headers: { 'X-API-KEY': SERPER_API_KEY } }
+    );
+    searchResults = serperRes.data;
+
+    res.json({
+      chatbotResponse,
+      documentResult,
+      geocodeResult,
+      searchResults,
+    });
+  } catch (err) {
+    console.error('❌ Error in chatbot handler:', err.response?.data || err.message);
+    res.status(500).json({
+      error: 'Failed to process request',
+      details: err.response?.data || err.message,
+    });
+  }
+});
+
+// 🚀 Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});

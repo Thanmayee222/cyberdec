@@ -1,8 +1,30 @@
-flask
-scikit-learn
-transformers
-torch
-stable-baselines3
-gym
-faker
+# Core ML frameworks (pinned where provided)
+tensorflow==2.9.1
+torch==1.13.1
+
+# Transformers / NLP
+transformers==4.27.2
+
+# Web / UI
+flask==2.2.5
+streamlit==1.21.0
 gunicorn
+
+# Data & utilities
+numpy==1.23.5
+pandas==1.5.3
+matplotlib==3.7.1
+requests==2.31.0
+
+# RL / Gym
+gym==0.26.2  # Optional, for reinforcement learning
+stable-baselines3
+
+# Other useful packages from local list
+scikit-learn
+faker
+scapy==2.4.5
+
+# Optional logging & viz (keep if you use ELK)
+elasticsearch==8.9.0  # Optional, for advanced logging
+kibana==8.9.0         # Optional, for advanced visualization

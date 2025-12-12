@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System Admin Panel</title>
+    <style>
+        body {
+            font-family: monospace;
+            background-color: #1e1e1e;
+            color: #ddd;
+            margin: 0;
+            padding: 20px;
+        }
+        .admin-panel {
+            background-color: #252526;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #333;
+        }
+        .header {
+            background-color: #333;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 3px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .content {
+            background-color: #1e1e1e;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            white-space: pre-wrap;
+            height: 500px;
+            overflow: auto;
+        }
+        .nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .nav-item {
+            background-color: #333;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .nav-item:hover {
+            background-color: #444;
+        }
+        .status {
+            font-size: 12px;
+            color: #666;
+        }
+        .highlight {
+            color: #569cd6;
+        }
+        .warning {
+            color: #ce9178;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-panel">
+        <div class="header">
+            <div>SysAdmin Control Panel v3.2.1</div>
+            <div class="status">Last update: <span id="timestamp"></span></div>
+        </div>
+        
+        <div class="nav">
+            <div class="nav-item">Users</div>
+            <div class="nav-item">System</div>
+            <div class="nav-item">Logs</div>
+            <div class="nav-item">Config</div>
+            <div class="nav-item">Network</div>
+        </div>
+        
+        <div class="content" id="content-area">{{ content }}</div>
+    </div>
+    
+    <script>
+        // Display current time
+        document.getElementById('timestamp').textContent = new Date().toISOString();
+        
+        // This script logs user interaction with the fake panel
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // In a real system, this would send data back to the server
+                console.log('Panel interaction: ' + this.textContent);
+                
+                // Fake content loading
+                document.getElementById('content-area').innerHTML = 'Loading ' + this.textContent + ' data...';
+                
+                // Redirect to logs page after a delay if they click on Logs
+                if (this.textContent === 'Logs') {
+                    setTimeout(() => {
+                        window.location.href = '/api/system/logs';
+                    }, 800);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System Logs</title>
+    <style>
+        body {
+            font-family: monospace;
+            background-color: #1e1e1e;
+            color: #ddd;
+            margin: 0;
+            padding: 20px;
+        }
+        .logs-container {
+            background-color: #252526;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #333;
+        }
+        .header {
+            background-color: #333;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 3px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .log-content {
+            background-color: #0c0c0c;
+            color: #4af626;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            white-space: pre;
+            font-family: 'Courier New', monospace;
+            height: 500px;
+            overflow: auto;
+        }
+        .info {
+            color: #569cd6;
+        }
+        .warning {
+            color: #ce9178;
+        }
+        .error {
+            color: #f14c4c;
+        }
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            background-color: #333;
+            border: none;
+            color: #ddd;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="logs-container">
+        <div class="header">
+            <div>System Logs - /var/log/system.log</div>
+            <div>Server: prod-web03</div>
+        </div>
+        
+        <div class="log-content" id="logs">{{ logs }}</div>
+        
+        <div class="controls">
+            <button class="btn" id="refresh-btn">Refresh</button>
+            <button class="btn" id="download-btn">Download Logs</button>
+            <button class="btn" id="clear-btn">Clear Logs</button>
+            <button class="btn" id="back-btn">Back to Admin</button>
+        </div>
+    </div>
+    
+    <script>
+        // Add some interactivity to make it look more realistic
+        document.getElementById('refresh-btn').addEventListener('click', function() {
+            const logsElem = document.getElementById('logs');
+            logsElem.innerHTML = 'Refreshing logs...\n' + logsElem.innerHTML;
+            
+            // Simulate refresh delay
+            setTimeout(() => {
+                const newLogLine = `${new Date().toISOString()} [INFO] system: Log refresh requested by user\n`;
+                logsElem.innerHTML = newLogLine + logsElem.innerHTML;
+            }, 700);
+        });
+        
+        document.getElementById('download-btn').addEventListener('click', function() {
+            alert('Log download initiated. Check your downloads folder.');
+        });
+        
+        document.getElementById('clear-btn').addEventListener('click', function() {
+            if(confirm('Are you sure you want to clear all logs?')) {
+                document.getElementById('logs').innerHTML = 
+                    `${new Date().toISOString()} [WARN] system: Logs cleared by user\n`;
+            }
+        });
+        
+        document.getElementById('back-btn').addEventListener('click', function() {
+            window.location.href = '/';
+        });
+    </script>
+</body>
+</html>

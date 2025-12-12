@@ -1,0 +1,71 @@
+Local Business Chatbot
+A sophisticated AI chatbot designed to help local business owners get market insights, analyze trends, and understand customer preferences.
+
+Features
+Long-term memory: Remembers previous conversations using Pinecone vector database
+Location awareness: Uses OpenStreetMap API to understand business locations
+Real-time insights: Fetches current data using Serper API for Google search results
+Content summarization: Uses Jina Reader API to summarize web content
+Clean, responsive UI: Built with Next.js and Tailwind CSS
+Tech Stack
+Frontend: Next.js, React, Tailwind CSS
+Backend: Next.js API routes
+LLM: Google Gemini
+Vector Database: Pinecone
+APIs: Serper (for search), Jina Reader (for content summarization), OpenStreetMap (for location data)
+Framework: LangChain
+Setup Instructions
+Clone this repository:
+bash
+git clone https://github.com/yourusername/local-business-chatbot.git
+cd local-business-chatbot
+Install dependencies:
+bash
+npm install
+Create a .env.local file in the root directory with the following variables:
+PINECONE_API_KEY=your-pinecone-api-key
+PINECONE_ENVIRONMENT=gcp-starter
+GEMINI_API_KEY=your-gemini-api-key
+SERPER_API_KEY=your-serper-api-key
+JINA_API_KEY=your-jina-api-key
+Run the development server:
+bash
+npm run dev
+Open http://localhost:3000 in your browser.
+API Keys Setup
+Pinecone
+Create an account at https://www.pinecone.io/
+Create a new index with dimension 768 and cosine similarity
+Copy your API key from the dashboard
+Google Gemini
+Visit https://ai.google.dev/
+Sign up and create an API key
+Serper API
+Sign up at https://serper.dev/
+Create an API key
+Jina AI
+Sign up at https://jina.ai/
+Get an API key for Jina Reader
+Deployment
+Vercel Deployment
+Push your code to a GitHub repository
+Connect your repository to Vercel
+Add your environment variables in the Vercel dashboard
+Deploy!
+How It Works
+User submits a query with an optional location
+The system retrieves location details using OpenStreetMap API
+It searches for relevant business insights using Serper API
+Web content is summarized using Jina Reader API
+Previous queries are retrieved from Pinecone vector database
+All information is sent to Gemini LLM to generate a helpful response
+The query and response are stored in Pinecone for future reference
+Project Structure
+/pages/api/chat.js - Backend API endpoint
+/components/BusinessChatbot.jsx - Main frontend component
+/pages/index.js - Entry point for the Next.js application
+Features to Add
+User authentication for multiple business owners
+Data visualization for market trends
+Export functionality for insights
+Integration with business analytics platforms
